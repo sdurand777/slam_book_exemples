@@ -1,0 +1,5 @@
+/home/smith/SLAMBOOK/ch2/build/CMakeFiles/main.dir
+/home/smith/SLAMBOOK/ch2/build/CMakeFiles/hello_shared.dir
+/home/smith/SLAMBOOK/ch2/build/CMakeFiles/useHello.dir
+/home/smith/SLAMBOOK/ch2/build/CMakeFiles/edit_cache.dir
+/home/smith/SLAMBOOK/ch2/build/CMakeFiles/rebuild_cache.dir
