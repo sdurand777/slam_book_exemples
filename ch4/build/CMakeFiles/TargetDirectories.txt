@@ -1,6 +1,0 @@
-/home/smith/SLAMBOOK/ch4/build/CMakeFiles/useSophus.dir
-/home/smith/SLAMBOOK/ch4/build/CMakeFiles/edit_cache.dir
-/home/smith/SLAMBOOK/ch4/build/CMakeFiles/rebuild_cache.dir
-/home/smith/SLAMBOOK/ch4/build/src/example/CMakeFiles/trajectoryError.dir
-/home/smith/SLAMBOOK/ch4/build/src/example/CMakeFiles/edit_cache.dir
-/home/smith/SLAMBOOK/ch4/build/src/example/CMakeFiles/rebuild_cache.dir

@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -g CMakeFiles/useHello.dir/src/useHello.cpp.o -o useHello  -Wl,-rpath,/home/smith/SLAMBOOK/ch2/build libhello_shared.so 

@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -g -g -shared -Wl,-soname,libhello_shared.so -o libhello_shared.so CMakeFiles/hello_shared.dir/src/libHelloSLAM.cpp.o 
