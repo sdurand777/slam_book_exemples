@@ -6,6 +6,9 @@
 #include <g2o/core/robust_kernel_impl.h>
 #include <iostream>
 
+// include eigen
+#include <eigen3/Eigen/Core>
+
 #include "common.h"
 #include "sophus/se3.hpp"
 
@@ -131,6 +134,7 @@ int main(int argc, char **argv) {
     }
 
     BALProblem bal_problem(argv[1]);
+    //BALProblem bal_problem("/home/ivm/slam_book_exemples/ch9/src/problem-16-22106.txt");
     bal_problem.Normalize();
     bal_problem.Perturb(0.1, 0.5, 0.5);
     bal_problem.WriteToPLYFile("initial.ply");
