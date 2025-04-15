@@ -16,16 +16,11 @@ using namespace Eigen;
 using Sophus::SE3d;
 using Sophus::SO3d;
 
-/************************************************
- * 本程序演示如何用g2o solver进行位姿图优化
- * sphere.g2o是人工生成的一个Pose graph，我们来优化它。
- * 尽管可以直接通过load函数读取整个图，但我们还是自己来实现读取代码，以期获得更深刻的理解
- * 本节使用李代数表达位姿图，节点和边的方式为自定义
- * **********************************************/
-
 typedef Matrix<double, 6, 6> Matrix6d;
 
-// 给定误差求J_R^{-1}的近似
+
+// compute the Jacobian of the inverse of SE3
+// BCH approximation for the right perturbation model
 Matrix6d JRInv(const SE3d &e) {
     Matrix6d J;
     J.block(0, 0, 3, 3) = SO3d::hat(e.so3().log());
@@ -40,6 +35,7 @@ Matrix6d JRInv(const SE3d &e) {
 // 李代数顶点
 typedef Matrix<double, 6, 1> Vector6d;
 
+// custom vertex
 class VertexSE3LieAlgebra : public g2o::BaseVertex<6, SE3d> {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -66,7 +62,7 @@ public:
         _estimate = SE3d();
     }
 
-    // 左乘更新
+    // update the vertex with the Lie algebra
     virtual void oplusImpl(const double *update) override {
         Vector6d upd;
         upd << update[0], update[1], update[2], update[3], update[4], update[5];
@@ -74,7 +70,7 @@ public:
     }
 };
 
-// 两个李代数节点之边
+// edge for pose graph between two vertices
 class EdgeSE3LieAlgebra : public g2o::BaseBinaryEdge<6, SE3d, VertexSE3LieAlgebra, VertexSE3LieAlgebra> {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -95,6 +91,7 @@ public:
         return true;
     }
 
+
     virtual bool write(ostream &os) const override {
         VertexSE3LieAlgebra *v1 = static_cast<VertexSE3LieAlgebra *> (_vertices[0]);
         VertexSE3LieAlgebra *v2 = static_cast<VertexSE3LieAlgebra *> (_vertices[1]);
@@ -113,19 +110,19 @@ public:
         return true;
     }
 
-    // 误差计算与书中推导一致
+    // compute error for pose graph
     virtual void computeError() override {
         SE3d v1 = (static_cast<VertexSE3LieAlgebra *> (_vertices[0]))->estimate();
         SE3d v2 = (static_cast<VertexSE3LieAlgebra *> (_vertices[1]))->estimate();
         _error = (_measurement.inverse() * v1.inverse() * v2).log();
     }
 
-    // 雅可比计算
+    // compute Jacobian
     virtual void linearizeOplus() override {
         SE3d v1 = (static_cast<VertexSE3LieAlgebra *> (_vertices[0]))->estimate();
         SE3d v2 = (static_cast<VertexSE3LieAlgebra *> (_vertices[1]))->estimate();
         Matrix6d J = JRInv(SE3d::exp(_error));
-        // 尝试把J近似为I？
+        // Jacobian of the inverse
         _jacobianOplusXi = -J * v2.inverse().Adj();
         _jacobianOplusXj = J * v2.inverse().Adj();
     }
@@ -193,8 +190,7 @@ int main(int argc, char **argv) {
 
     cout << "saving optimization results ..." << endl;
 
-    // 因为用了自定义顶点且没有向g2o注册，这里保存自己来实现
-    // 伪装成 SE3 顶点和边，让 g2o_viewer 可以认出
+    // save result
     ofstream fout("result_lie.g2o");
     for (VertexSE3LieAlgebra *v:vectices) {
         fout << "VERTEX_SE3:QUAT ";

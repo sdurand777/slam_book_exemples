@@ -9,13 +9,6 @@
 
 using namespace std;
 
-/************************************************
- * 本程序演示如何用g2o solver进行位姿图优化
- * sphere.g2o是人工生成的一个Pose graph，我们来优化它。
- * 尽管可以直接通过load函数读取整个图，但我们还是自己来实现读取代码，以期获得更深刻的理解
- * 这里使用g2o/types/slam3d/中的SE3表示位姿，它实质上是四元数而非李代数.
- * **********************************************/
-
 int main(int argc, char **argv) {
     if (argc != 2) {
         cout << "Usage: pose_graph_g2o_SE3 sphere.g2o" << endl;

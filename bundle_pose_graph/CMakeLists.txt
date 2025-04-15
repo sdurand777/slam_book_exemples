@@ -10,8 +10,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 include_directories("/usr/include/eigen3")
 
 # sophus 
-find_package(Sophus REQUIRED)
-include_directories(${Sophus_INCLUDE_DIRS})
+#find_package(Sophus REQUIRED)
+#include_directories(${Sophus_INCLUDE_DIRS})
 
 # g2o 
 find_package(g2o REQUIRED)

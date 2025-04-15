@@ -23,13 +23,14 @@ void find_feature_matches(
   std::vector<KeyPoint> &keypoints_2,
   std::vector<DMatch> &matches);
 
-// 像素坐标转相机归一化坐标
+// project 3D points to 2D points
 Point2d pixel2cam(const Point2d &p, const Mat &K);
 
 // BA by g2o
 typedef vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>> VecVector2d;
 typedef vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> VecVector3d;
 
+// BA by g2o
 void bundleAdjustmentG2O(
   const VecVector3d &points_3d,
   const VecVector2d &points_2d,
@@ -50,7 +51,8 @@ int main(int argc, char **argv) {
     cout << "usage: pose_estimation_3d2d img1 img2 depth1 depth2" << endl;
     return 1;
   }
-  //-- 读取图像
+
+  //-- read images
   Mat img_1 = imread(argv[1], cv::IMREAD_COLOR);
   Mat img_2 = imread(argv[2], cv::IMREAD_COLOR);
   assert(img_1.data && img_2.data && "Can not load images!");
@@ -58,20 +60,40 @@ int main(int argc, char **argv) {
   vector<KeyPoint> keypoints_1, keypoints_2;
   vector<DMatch> matches;
   find_feature_matches(img_1, img_2, keypoints_1, keypoints_2, matches);
-  cout << "一共找到了" << matches.size() << "组匹配点" << endl;
+  cout << "number of matches" << matches.size() << "points" << endl;
 
-  // 建立3D点
-  Mat d1 = imread(argv[3], cv::IMREAD_UNCHANGED);       // 深度图为16位无符号数，单通道图像
+  // generate 3D points
+  Mat d1 = imread(argv[3], cv::IMREAD_UNCHANGED);       // read depth image to get 3D points
+  // intrinsic parameters
   Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
   vector<Point3f> pts_3d;
   vector<Point2f> pts_2d;
+
   for (DMatch m:matches) {
-    ushort d = d1.ptr<unsigned short>(int(keypoints_1[m.queryIdx].pt.y))[int(keypoints_1[m.queryIdx].pt.x)];
+    // Vérifiez que les indices sont valides
+    if (m.queryIdx >= keypoints_1.size() || m.trainIdx >= keypoints_2.size()) {
+      continue;
+    }
+    
+    // Récupérez les coordonnées du point
+    int x = int(keypoints_1[m.queryIdx].pt.x);
+    int y = int(keypoints_1[m.queryIdx].pt.y);
+    
+    // Vérifiez que les coordonnées sont dans les limites de l'image
+    if (y < 0 || y >= d1.rows || x < 0 || x >= d1.cols) {
+        continue;
+    }
+    
+    ushort d = d1.at<unsigned short>(y, x);
+
     if (d == 0)   // bad depth
       continue;
     float dd = d / 5000.0;
+    // get pixel on image 1 project to 3D point
     Point2d p1 = pixel2cam(keypoints_1[m.queryIdx].pt, K);
+    // 3D points with final depth from sensor rgbd
     pts_3d.push_back(Point3f(p1.x * dd, p1.y * dd, dd));
+    // 2D points
     pts_2d.push_back(keypoints_2[m.trainIdx].pt);
   }
 
@@ -79,9 +101,9 @@ int main(int argc, char **argv) {
 
   chrono::steady_clock::time_point t1 = chrono::steady_clock::now();
   Mat r, t;
-  solvePnP(pts_3d, pts_2d, K, Mat(), r, t, false); // 调用OpenCV 的 PnP 求解，可选择EPNP，DLS等方法
+  solvePnP(pts_3d, pts_2d, K, Mat(), r, t, false); // PnP from opencv
   Mat R;
-  cv::Rodrigues(r, R); // r为旋转向量形式，用Rodrigues公式转换为矩阵
+  cv::Rodrigues(r, R); // convert rotation vector to rotation matrix
   chrono::steady_clock::time_point t2 = chrono::steady_clock::now();
   chrono::duration<double> time_used = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
   cout << "solve pnp in opencv cost time: " << time_used.count() << " seconds." << endl;

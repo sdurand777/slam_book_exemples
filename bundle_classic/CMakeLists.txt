@@ -8,11 +8,11 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 
-set(Eigen3_DIR "/usr/share/eigen3/cmake")
+#set(Eigen3_DIR "/usr/share/eigen3/cmake")
 
 # Find packages
-find_package(Eigen3 REQUIRED)
-find_package(Ceres REQUIRED)
+#find_package(Eigen3 REQUIRED)
+#find_package(Ceres REQUIRED)
 find_package(g2o REQUIRED)
 
 
@@ -40,5 +40,5 @@ add_library(bal_common src/common.cpp)
 add_executable(bundle_adjustment_g2o src/bundle_adjustment_g2o.cpp)
 target_link_libraries(bundle_adjustment_g2o ${G2O_LIBS} bal_common)
 
-add_executable(bundle_adjustment_ceres src/bundle_adjustment_ceres.cpp)
-target_link_libraries(bundle_adjustment_ceres ${CERES_LIBRARIES} bal_common)
+#add_executable(bundle_adjustment_ceres src/bundle_adjustment_ceres.cpp)
+#target_link_libraries(bundle_adjustment_ceres ${CERES_LIBRARIES} bal_common)
